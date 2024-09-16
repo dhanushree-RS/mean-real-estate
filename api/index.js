@@ -1,26 +1,31 @@
+// index.js
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import userRouter from './routes/user.route.js';
+import authRouter from './routes/auth.route.js';
 
 dotenv.config();
 
-mongoose.
-connect(process.env.MONGO)
-.then(()=>{
-    console.log('Connected to MongoDB!');
-})
-.catch((error)=>{
-    console.error('Error connecting to MongoDB:', error);
-     // Exit with an error code if connection fails.
-});
-
-
 const app = express();
 
-app.listen(4000, () =>{
-    console.log('Server running on port 4000 ');
-})
+mongoose
+    .connect(process.env.MONGO)
+    .then(() => {
+        console.log('Connected to MongoDB!');
+    })
+    .catch((error) => {
+        console.error('Error connecting to MongoDB:', error);
+        // process.exit(1); // Exit with an error code if connection fails
+    });
 
+app.use(express.json());
 
+// Use routes
 app.use('/api/user', userRouter);
+app.use('/api/auth', authRouter);
+
+// Start server
+app.listen(4000, () => {
+    console.log('Server running on port 4000');
+});
