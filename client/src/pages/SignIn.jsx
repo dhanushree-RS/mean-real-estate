@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { signInStart,signInSuccess,signInFailure } from "../redux/user/userSlice";
+
 
 export default function SignIn() {
 
   const [formData, setFormData] = useState({});
-  const [error,setError] = useState(null);
-  const [loading,setLoading] = useState(false);
+  // const [error,setError] = useState(null);
+  // const [loading,setLoading] = useState(false);
+  const {loading, error } = useSelector((state)=>state.user);
   const [alert, setAlert] = useState(null);
-
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   
   const handleChange = (e) => {
@@ -23,7 +27,8 @@ export default function SignIn() {
   const handleSubmit = async(e) => {
     e.preventDefault();
     try {
-      setLoading(true);
+      // setLoading(true);
+      dispatch(signInStart());
       const res = await fetch('/api/auth/signin',
         {
           method: 'POST',
@@ -32,22 +37,27 @@ export default function SignIn() {
         });
         const data = await res.json();
         if (data.success === false){
-          setLoading(false);
-          setError(data.message);
-          setAlert({ type: 'error', message: `Invalid credentials: ${data.message}` });
+          // setLoading(false);
+          // setError(data.message);
+          dispatch(signInFailure(data.message));
           return;
+          // setAlert({ type: 'error', message: `Invalid credentials: ${data.message}` });
+          // return;
         }
-        setLoading(false);
-        setError(null);
-        setAlert({ type: 'success', message: 'Signup successful!' });
+        // setLoading(false);
+        // setError(null);
+        // setAlert({ type: 'success', message: 'Signup successful!' });
+        dispatch(signInSuccess(data));
         navigate('/')
         
         
       
     } catch (error) {
-      setLoading(false);
-      setError(error.message);
-      setAlert({ type: 'error', message: `An error occurred: ${error.message}` });
+      // setLoading(false);
+      // setError(error.message);
+      dispatch(signInFailure(error.message));
+      // setAlert({ type: 'error', message: `An error occurred: ${error.message}` });
+      //setAlert({ type: 'error', message: `An error occurred: ${error.message}` });
     }  
   };
 
@@ -167,7 +177,7 @@ export default function SignIn() {
           </div>
         </div>
       </div>
-      {alert && (
+      {/* {alert && (
   <div
     className={`fixed top-4 right-4 p-4 rounded shadow-md transition-transform transform ${
       alert.type === 'success' ? 'bg-green-500' : 'bg-red-500'
@@ -177,7 +187,7 @@ export default function SignIn() {
   >
     <p className="text-white">{alert.message}</p>
   </div>
-)}
+)} */}
 
     </div>
   );
