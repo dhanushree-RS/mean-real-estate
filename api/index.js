@@ -13,7 +13,7 @@ const app = express();
 mongoose
     .connect(process.env.MONGO)
     .then(() => {
-        console.log('Connected to MongoDB!');
+        console.log('Connected to MongoDB!!');
     })
     .catch((error) => {
         console.error('Error connecting to MongoDB:', error);
@@ -28,7 +28,7 @@ app.use('/api/auth', authRouter);
 
 // Start server
 app.listen(4000, () => {
-    console.log('Server running on port 4000');
+    console.log('Server running on port 4000!');
 });
 
 
