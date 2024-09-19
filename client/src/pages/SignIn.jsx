@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { signInStart,signInSuccess,signInFailure } from "../redux/user/userSlice";
+import OAuth from "../components/OAuth";
 
 
 export default function SignIn() {
@@ -117,7 +118,7 @@ export default function SignIn() {
             </div>
           </div>
 
-          <div className="w-full flex justify-center">
+          {/* <div className="w-full flex justify-center">
             <button className="flex items-center bg-white border border-gray-300 rounded-lg shadow-md px-6 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
               <svg
                 className="h-6 w-6 mr-2"
@@ -166,7 +167,9 @@ export default function SignIn() {
 
               <span>Continue with Google</span>
             </button>
-          </div>
+          </div> */}
+
+          <OAuth/>
           <div className="w-full flex items-center justify-center mt-5">
             <span className="text-gray-600">
               Dont have an account?{" "}
