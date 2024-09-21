@@ -39,7 +39,8 @@ export default function Header() {
               <img
               src={currentUser.avatar}
               alt="profile"
-              className="rounded-full w-10 h-10 object-cover border border-gray-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] transition-transform duration-300 ease-in-out mr-2 hover:scale-105"
+              className="rounded-full w-10 h-10 object-cover border border-gray-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] transition-transform duration-300 ease-in-out mr-2
+               hover:scale-105"
             />
             
             ) : (
