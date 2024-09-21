@@ -1,7 +1,11 @@
 import { FaSearch } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 export default function Header() {
+  const { currentUser } = useSelector((state) => state.user);
+  console.log(currentUser.avatar);
+
   return (
     <header className="bg-gray-200 shadow-lg">
       <div className="flex flex-col sm:flex-row justify-between items-center max-w-6xl mx-auto p-4">
@@ -20,15 +24,30 @@ export default function Header() {
           <FaSearch className="text-gray-600 ml-2" />
         </form>
         <ul className="flex flex-col sm:flex-row mt-4 sm:mt-0 space-y-2 sm:space-y-0 sm:space-x-6">
-          <li className="text-gray-800 hover:text-blue-600 transition-colors duration-300 font-medium px-3 py-1 rounded-lg hover:bg-gray-100 cursor-pointer">
-            <Link to="/">Home</Link>
-          </li>
-          <li className="text-gray-800 hover:text-blue-600 transition-colors duration-300 font-medium px-3 py-1 rounded-lg hover:bg-gray-100 cursor-pointer">
-            <Link to="/about">About</Link>
-          </li>
-          <li className="text-gray-800 hover:text-blue-600 transition-colors duration-300 font-medium px-3 py-1 rounded-lg hover:bg-gray-100 cursor-pointer">
-            <Link to="/sign-in">Sign In</Link>
-          </li>
+          <Link to="/">
+            <li className="text-gray-800 hover:text-blue-600 transition-colors duration-300 font-medium px-3 py-1 rounded-lg hover:bg-gray-100 cursor-pointer">
+              Home
+            </li>
+          </Link>
+          <Link to="/about">
+            <li className="text-gray-800 hover:text-blue-600 transition-colors duration-300 font-medium px-3 py-1 rounded-lg hover:bg-gray-100 cursor-pointer">
+              About
+            </li>
+          </Link>
+          <Link to="/profile">
+            {currentUser ? (
+              <img
+              src={currentUser.avatar}
+              alt="profile"
+              className="rounded-full w-10 h-10 object-cover border border-gray-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] transition-transform duration-300 ease-in-out mr-2 hover:scale-105"
+            />
+            
+            ) : (
+              <li className="text-gray-800 hover:text-blue-600 transition-colors duration-300 font-medium px-3 py-1 rounded-lg hover:bg-gray-100 cursor-pointer">
+                Sign In
+              </li>
+            )}
+          </Link>
         </ul>
       </div>
     </header>
