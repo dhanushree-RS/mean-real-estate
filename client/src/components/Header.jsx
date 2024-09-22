@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 
 export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
-  console.log(currentUser.avatar);
+  //console.log(currentUser.avatar);
 
   return (
     <header className="bg-gray-200 shadow-lg">
