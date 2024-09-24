@@ -5,15 +5,34 @@ import CustomButton from "./CustomButton";
 import { getStorage } from "firebase/storage";
 import { app } from "../firebase";
 import { getDownloadURL, uploadBytesResumable, ref } from "firebase/storage";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateListing() {
+  const { currentUser } = useSelector((state) => state.user);
   const [files, setFiles] = useState([]);
   const [formData, setFormData] = useState({
     imageUrls: [],
+    name: "",
+    description: "",
+    address: "",
+    type: "rent",
+    bedrooms: 1,
+    bathrooms: 1,
+    regularPrice: 50,
+    discountedPrice: 50,
+    furnished: false,
+    parking: false,
+    offer: false,
   });
   const [imageUploadError, setImageUploadError] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [error,setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   console.log(formData);
+
+
 
   const handleImageSubmit = () => {
     if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
@@ -29,17 +48,24 @@ export default function CreateListing() {
             imageUrls: formData.imageUrls.concat(urls),
           });
           setImageUploadError(false);
-          setIsUploading(false);
-          setIsUploading(false);
+         
           //console.log(formData);
         })
         .catch((error) => {
           setImageUploadError("image upload error file must be less than 2mb");
           //console.error('image upload error', error);
           // process.exit(1); // Exit with an error code if connection fails
-        });
+        })
+        .finally(()=>{
+          setIsUploading(false);
+        })
     } else {
-      setImageUploadError("Maximum number of images reached(max 6)");
+      if (files.length === 0) {
+        setImageUploadError("plese select an image");
+      }else{
+        setImageUploadError("Maximum number of images reached(max 6)");
+      }
+      
     }
   };
 
@@ -75,12 +101,70 @@ export default function CreateListing() {
     });
   };
 
+  const handleChange = (e) => {
+    const { id, type, checked, value } = e.target; // Destructure properties for easier access
+  
+    if (id === "sell" || id === "rent") {
+      setFormData({ ...formData, type: id });
+    }
+  
+    // For checkboxes (parking, furnished, offer)
+    if (id === "parking" || id === "furnished" || id === "offer") {
+      setFormData({ ...formData, [id]: checked });
+  
+      // If the offer checkbox is being changed, you can clear the discounted price if it's unchecked
+      if (id === "offer" && !checked) {
+        setFormData({ ...formData, discountedPrice: '' }); // Clear the discounted price when unchecked
+      }
+    }
+  
+    // For text and number inputs
+    if (type === "number" || type === "text" || type === "textarea") {
+      setFormData({ ...formData, [id]: value });
+    }
+  };
+  
+
+
+  const handleSubmit = async(e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      setError(true);
+      const res = await fetch('/api/listing/create',
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({...formData,
+            userRef: currentUser._id ,}
+          ),
+        }
+
+      )
+      const data = await res.json();
+      setLoading(false);
+      if (data.success === false) {
+        setError(data.message);
+        setLoading(false);
+        return;
+      }
+      navigate(`listing/${data._id}`);
+    } catch (error) {
+      setError(error.message);
+      setLoading(false);
+    }
+ 
+    console.log(formData);
+  };
+
   return (
     <main className="mx-auto p-2 max-w-4xl">
       <h1 className="text-3xl font-bold text-center my-4 mb-5">
         Create Listing
-      </h1>
-      <form className="flex flex-col gap-6">
+      </h1 >
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {/* Left Section: Inputs for text fields */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <input
@@ -91,12 +175,16 @@ export default function CreateListing() {
             minLength="10"
             maxLength="65"
             required
+            onChange={handleChange}
+            value={formData.name}
           />
           <textarea
             id="description"
             className="w-full p-3 border border-blue-200 rounded-lg bg-gray-50 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition duration-300"
             placeholder="Description"
             required
+            onChange={handleChange}
+            value={formData.description}
           />
           <input
             type="text"
@@ -104,6 +192,8 @@ export default function CreateListing() {
             className="w-full p-3 border border-blue-200 rounded-lg bg-gray-50 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition duration-300 col-span-2"
             placeholder="Address"
             required
+            onChange={handleChange}
+            value={formData.address}
           />
         </div>
 
@@ -114,6 +204,8 @@ export default function CreateListing() {
               type="checkbox"
               id="sell"
               className="w-5 h-5 accent-blue-400"
+              onChange={handleChange}
+              checked={formData.type === "sell"}
             />
             <span className="text-gray-700">Sell</span>
           </div>
@@ -122,14 +214,18 @@ export default function CreateListing() {
               type="checkbox"
               id="rent"
               className="w-5 h-5 accent-blue-400"
+              onChange={handleChange}
+              checked={formData.type === "rent"}
             />
             <span className="text-gray-700">Rent</span>
           </div>
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
-              id="Parking"
+              id="parking"
               className="w-5 h-5 accent-blue-400"
+              onChange={handleChange}
+              checked={formData.parking}
             />
             <span className="text-gray-700">Parking Spot</span>
           </div>
@@ -138,6 +234,8 @@ export default function CreateListing() {
               type="checkbox"
               id="furnished"
               className="w-5 h-5 accent-blue-400"
+              onChange={handleChange}
+              checked={formData.furnished}
             />
             <span className="text-gray-700">Furnished</span>
           </div>
@@ -146,6 +244,8 @@ export default function CreateListing() {
               type="checkbox"
               id="offer"
               className="w-5 h-5 accent-blue-400"
+              onChange={handleChange}
+              checked={formData.offer}
             />
             <span className="text-gray-700">Offer</span>
           </div>
@@ -161,6 +261,8 @@ export default function CreateListing() {
               min="1"
               max="10"
               required
+              onChange={handleChange}
+              value={formData.bedrooms}
             />
             <p className="text-center mt-1 text-gray-600">Beds</p>
           </div>
@@ -172,6 +274,8 @@ export default function CreateListing() {
               min="1"
               max="10"
               required
+              onChange={handleChange}
+              value={formData.bathrooms}
             />
             <p className="text-center mt-1 text-gray-600">Baths</p>
           </div>
@@ -180,8 +284,11 @@ export default function CreateListing() {
               type="number"
               id="regularPrice"
               className="w-full p-3 border border-blue-200 rounded-lg bg-gray-50 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition duration-300"
-              min="1"
+              min="50"
+              max="10000000"
               required
+              onChange={handleChange}
+              value={formData.regularPrice}
             />
             <p className="text-center mt-1 text-gray-600">Regular Price</p>
             <span className="text-xs text-center text-gray-400">
@@ -189,13 +296,18 @@ export default function CreateListing() {
             </span>
           </div>
           <div className="flex flex-col">
-            <input
-              type="number"
-              id="discountPrice"
-              className="w-full p-3 border border-blue-200 rounded-lg bg-gray-50 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition duration-300"
-              min="1"
-              required
-            />
+          <input
+          type="number"
+          id="discountedPrice"
+          className={`w-full p-3 border rounded-lg bg-gray-50 focus:border-blue-500 focus:outline-none focus:ring-2 transition duration-300 
+            ${formData.offer ? 'border-blue-200' : 'border-gray-300 opacity-50 cursor-not-allowed'}`} // Change styles based on disabled state
+          min="50"
+          max="100000"
+          required
+          onChange={handleChange}
+          value={formData.discountedPrice}
+          disabled={!formData.offer} // Disable input if offer is not checked
+        />
             <p className="text-center mt-1 text-gray-600">Discount Price</p>
             <span className="text-xs text-center text-gray-400">
               ($ / month)
@@ -223,6 +335,7 @@ export default function CreateListing() {
                          file:text-sm file:font-semibold
                          file:bg-gray-200 file:text-gray-700
                          hover:file:bg-gray-300"
+              required
             />
             <button
               onClick={handleImageSubmit}
@@ -281,8 +394,24 @@ export default function CreateListing() {
       CREATE LISTING
     </motion.button> */}
           {/* <AnimatedGradientButton /> */}
-          <CustomButton />
+          <CustomButton 
+          type="submit"
+          loading={isUploading}>
+            CREATE LISTING
+          </CustomButton>
         </div>
+        {loading && (
+          <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-70 z-50">
+            <div className="animate-pulse h-24 w-24 rounded-full border-4 border-white border-t-transparent"></div>
+            <p className="text-white ml-4">Submitting your form...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="flex justify-center items-center mt-4">
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+        )}
       </form>
     </main>
   );
