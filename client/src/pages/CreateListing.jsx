@@ -1,9 +1,80 @@
-import React from "react";
-import { motion } from 'framer-motion';
-import AnimatedGradientButton from './AnimatedGradientButton.jsx';
-
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+// import AnimatedGradientButton from './AnimatedGradientButton.jsx';
+import CustomButton from "./CustomButton";
+import { getStorage } from "firebase/storage";
+import { app } from "../firebase";
+import { getDownloadURL, uploadBytesResumable, ref } from "firebase/storage";
 
 export default function CreateListing() {
+  const [files, setFiles] = useState([]);
+  const [formData, setFormData] = useState({
+    imageUrls: [],
+  });
+  const [imageUploadError, setImageUploadError] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  console.log(formData);
+
+  const handleImageSubmit = () => {
+    if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
+      setIsUploading(true);
+      const promises = [];
+      for (let i = 0; i < files.length; i++) {
+        promises.push(storeImage(files[i]));
+      }
+      Promise.all(promises)
+        .then((urls) => {
+          setFormData({
+            ...formData,
+            imageUrls: formData.imageUrls.concat(urls),
+          });
+          setImageUploadError(false);
+          setIsUploading(false);
+          setIsUploading(false);
+          //console.log(formData);
+        })
+        .catch((error) => {
+          setImageUploadError("image upload error file must be less than 2mb");
+          //console.error('image upload error', error);
+          // process.exit(1); // Exit with an error code if connection fails
+        });
+    } else {
+      setImageUploadError("Maximum number of images reached(max 6)");
+    }
+  };
+
+  const storeImage = async (file) => {
+    return new Promise((resolve, reject) => {
+      const storage = getStorage(app);
+      const fileName = new Date().getTime() + file.name;
+      const storageRef = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log(`Upload is ${progress}% done.`);
+        },
+        (error) => {
+          reject(error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            resolve(downloadURL);
+          });
+        }
+      );
+    });
+  };
+
+  const handleRemoveImage = (index) => {
+    setFormData({
+      ...formData,
+      imageUrls: formData.imageUrls.filter((_, i) => i !== index),
+    });
+  };
+
   return (
     <main className="mx-auto p-2 max-w-4xl">
       <h1 className="text-3xl font-bold text-center my-4 mb-5">
@@ -142,6 +213,7 @@ export default function CreateListing() {
           </p>
           <div className="flex items-center space-x-4">
             <input
+              onChange={(e) => setFiles(e.target.files)}
               type="file"
               accept="image/*"
               multiple
@@ -153,6 +225,7 @@ export default function CreateListing() {
                          hover:file:bg-gray-300"
             />
             <button
+              onClick={handleImageSubmit}
               type="button"
               className="bg-gray-600 hover:bg-gray-700 text-white 
                          font-bold py-2 px-4 rounded-lg focus:outline-none
@@ -161,9 +234,44 @@ export default function CreateListing() {
               Upload
             </button>
           </div>
+          <p className="text-red-700 text-sm">
+            {imageUploadError && imageUploadError}
+          </p>
+
+          {isUploading && (
+            <div className="flex justify-center items-center mt-4">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-gray-600"></div>
+              <p className="ml-4 text-gray-600">Uploading images...</p>
+            </div>
+          )}
+
+          {formData.imageUrls.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {formData.imageUrls.map((url, index) => (
+                <div key={url} className="relative group">
+                  <img
+                    src={url}
+                    alt="Listing Image"
+                    className="w-40 h-40 rounded-lg object-cover"
+                  />
+                  {/* Delete icon button appears on hover */}
+                  <button
+                    onClick={() => handleRemoveImage(index)}
+                    className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center 
+                     text-white opacity-0 group-hover:opacity-100 transition-opacity 
+                     duration-300 rounded-lg"
+                  >
+                    <span className="text-3xl font-bold">🗑️</span>{" "}
+                    {/* Larger and bolder trash icon */}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
+
         <div className="flex justify-center items-center">
-        {/* <motion.button
+          {/* <motion.button
       className="bg-gray-700 text-white font-semibold py-2 px-2 rounded-lg w-48
                  shadow-2xl focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
       whileHover={{ scale: 1.05, backgroundColor: "#4a5568" }} // Change color on hover
@@ -172,7 +280,8 @@ export default function CreateListing() {
     >
       CREATE LISTING
     </motion.button> */}
-    <AnimatedGradientButton />
+          {/* <AnimatedGradientButton /> */}
+          <CustomButton />
         </div>
       </form>
     </main>
