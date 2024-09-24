@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useContext } from "react";
+import { DarkModeContext } from "../context/DarkModeContext";
 // import AnimatedGradientButton from './AnimatedGradientButton.jsx';
 import CustomButton from "./CustomButton";
 import { getStorage } from "firebase/storage";
@@ -9,6 +11,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 export default function CreateListing() {
+  const { isDarkMode } = useContext(DarkModeContext);
   const { currentUser } = useSelector((state) => state.user);
   const [files, setFiles] = useState([]);
   const [formData, setFormData] = useState({
@@ -29,7 +32,7 @@ export default function CreateListing() {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  //const [isDarkMode, setIsDarkMode] = useState(false);
   const navigate = useNavigate();
   console.log(formData);
 
@@ -150,10 +153,6 @@ export default function CreateListing() {
     console.log(formData);
   };
 
-  const handleToggle = () => {
-    setIsDarkMode((prevMode) => !prevMode); // Toggle dark mode
-  };
-
   return (
     <div
       className={
@@ -162,32 +161,11 @@ export default function CreateListing() {
           : "bg-white min-h-screen text-black"
       }
     >
-     <header className="flex justify-between items-center p-4">
-  <div className="flex-1 text-center">
-    <h1 className="text-2xl font-bold">Create Listing</h1>
-  </div>
-  
-  <div className="relative inline-flex items-center">
-    <input
-      type="checkbox"
-      id="toggle"
-      className="sr-only"
-      checked={isDarkMode}
-      onChange={handleToggle}
-    />
-    <label
-      htmlFor="toggle"
-      className={`flex items-center cursor-pointer bg-gray-300 rounded-full w-12 h-6 transition-colors duration-300 
-        ${isDarkMode ? "bg-gray-700" : "bg-gray-300"}`}
-    >
-      <span
-        className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 
-          ${isDarkMode ? "translate-x-6" : "translate-x-0"}`}
-      />
-    </label>
-  </div>
-</header>
-
+      <header className="flex justify-between items-center p-4">
+        <div className="flex-1 text-center">
+          <h1 className="text-2xl font-bold">Create Listing</h1>
+        </div>
+      </header>
 
       <main className="mx-auto p-2 max-w-4xl">
         {" "}
@@ -317,7 +295,7 @@ export default function CreateListing() {
                 onChange={handleChange}
                 value={formData.bedrooms}
               />
-              <p className="text-center mt-1 text-gray-400">Beds</p>
+              <p className={`text-center mt-1 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Beds</p>
             </div>
             <div className="flex flex-col">
               <input
@@ -334,7 +312,7 @@ export default function CreateListing() {
                 onChange={handleChange}
                 value={formData.bathrooms}
               />
-              <p className="text-center mt-1 text-gray-400">Baths</p>
+              <p className={`text-center mt-1 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Baths</p>
             </div>
             <div className="flex flex-col">
               <input
@@ -351,7 +329,7 @@ export default function CreateListing() {
                 onChange={handleChange}
                 value={formData.regularPrice}
               />
-              <p className="text-center mt-1 text-gray-400">Regular Price</p>
+              <p className={`text-center mt-1 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Regular Price</p>
               <span className="text-xs text-center text-gray-500">
                 ($ / month)
               </span>
@@ -380,7 +358,7 @@ export default function CreateListing() {
                 value={formData.discountedPrice}
                 disabled={!formData.offer} // Disable input if offer is not checked
               />
-              <p className="text-center mt-1 text-gray-400">Discount Price</p>
+              <p className={`text-center mt-1 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Discount Price</p>
               <span className="text-xs text-center text-gray-500">
                 ($ / month)
               </span>
@@ -389,7 +367,7 @@ export default function CreateListing() {
 
           {/* Image uploader */}
           <div className="flex flex-col mt-4">
-            <p className="font-semibold text-lg mb-2 text-gray-300">
+            <p className={`font-semibold text-lg mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
               Images:
               <span className="font-normal ml-2 text-gray-400 text-sm">
                 The first image will be the cover (max 6)
