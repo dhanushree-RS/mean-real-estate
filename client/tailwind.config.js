@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: ["class"],
+  darkMode: "class",
   content: [
     './pages/**/*.{js,jsx}',
     './components/**/*.{js,jsx}',
@@ -18,7 +18,7 @@ module.exports = {
     },
     extend: {
 
-      animation: {
+       animation: {
         flash: 'flash 0.5s ease-in-out', // Flash animation over 0.5 seconds
       },
       keyframes: {
